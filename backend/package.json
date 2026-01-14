@@ -1,0 +1,19 @@
+{
+    "name": "language-tracker-backend",
+    "version": "1.0.0",
+    "description": "Backend server for language learning tracker",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "keywords": [
+        "language",
+        "learning",
+        "tracker"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "express": "^5.2.1"
+    }
+}
