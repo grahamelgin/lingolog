@@ -2,22 +2,25 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
+const db = require('./database/db');
+const languagesRouter = require('./routes/languages');
+const sessionsRouter = require('./routes/sessions');
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Language Learning Tracker API is running!',
+    message: 'Language Learning Tracker API',
     version: '1.0.0',
-    status: 'success'
+    endpoints: {
+      languages: '/api/languages',
+      sessions: '/api/sessions'
+    }
   });
 });
 
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK',
-    timestamp: new Date().toISOString()
-  });
-});
+app.use('/api/languages', languagesRouter);
+app.use('/api/sessions', sessionsRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
