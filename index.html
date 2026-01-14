@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Language Learning Tracker</title>
+
+  <!-- Connect CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <h1>Language Learning Tracker</h1>
+
+  <!-- Add Session Form -->
+  <section id="add-session">
+    <h2>Add Study Session</h2>
+
+    <label>Language:</label>
+    <select id="languageInput">
+      <option value="Japanese">Japanese</option>
+      <option value="Spanish">Spanish</option>
+    </select>
+
+    <label>Category:</label>
+    <select id="categoryInput">
+      <option value="Comprehensible Input">Comprehensible Input</option>
+      <option value="Grammar Study">Grammar Study</option>
+      <option value="Speaking">Speaking</option>
+      <option value="Listening">Listening</option>
+      <option value="Reading">Reading</option>
+      <option value="Writing">Writing</option>
+    </select>
+
+    <label>Minutes:</label>
+    <input id="minutesInput" type="number" min="1">
+
+    <button id="addButton">Add Session</button>
+  </section>
+
+  <!-- Stats -->
+  <section id="stats">
+    <h2>Stats</h2>
+    <div id="totalTimeDisplay">Total Time: 0 minutes</div>
+
+    <h3>Sessions:</h3>
+    <ul id="sessionList"></ul>
+  </section>
+
+  <!-- Connect JavaScript -->
+  <script src="script.js"></script>
+
+</body>
+</html>
