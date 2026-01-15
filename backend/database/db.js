@@ -7,7 +7,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS languages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT (datetime('now','localtime'))
   );
 
   CREATE TABLE IF NOT EXISTS study_sessions (
@@ -17,7 +17,7 @@ db.exec(`
     duration_minutes INTEGER NOT NULL,
     date DATE NOT NULL,
     notes TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT (datetime('now','localtime')),
     FOREIGN KEY (language_id) REFERENCES languages(id) ON DELETE CASCADE
   );
 `);

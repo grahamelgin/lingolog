@@ -14,7 +14,7 @@ function App() {
   const [sessionForm, setSessionForm] = useState({
     category: 'Reading',
     duration_minutes: '',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
     notes: ''
   });
 
@@ -93,7 +93,7 @@ function App() {
       setSessionForm({
         category: 'Reading',
         duration_minutes: '',
-        date: new Date().toISOString().split('T')[0],
+        date: new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
         notes: ''
       });
       
@@ -120,6 +120,16 @@ function App() {
     if (hours === 0) return `${mins}m`;
     if (mins === 0) return `${hours}h`;
     return `${hours}h ${mins}m`;
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    if (dateString.length === 10 && dateString.includes('-')) {
+      const [year, month, day] = dateString.split('-');
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      return date.toLocaleDateString();
+    }
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -153,7 +163,7 @@ function App() {
                   {languages.map(lang => (
                     <div key={lang.id} className="language-card" onClick={() => setSelectedLanguage(lang)}>
                       <h3>{lang.name}</h3>
-                      <p className="date">Added {new Date(lang.created_at).toLocaleDateString()}</p>
+                      <p className="date">Added {formatDate(lang.created_at.substring(0, 10))}</p>
                     </div>
                   ))}
                 </div>
@@ -272,12 +282,12 @@ function App() {
                   <tbody>
                     {sessions.map(session => (
                       <tr key={session.id}>
-                        <td>{new Date(session.date).toLocaleDateString()}</td>
+                        <td>{formatDate(session.date)}</td>
                         <td><span className="category-badge">{session.category}</span></td>
                         <td>{formatTime(session.duration_minutes)}</td>
                         <td>{session.notes || '-'}</td>
                         <td>
-                          <button className="delete-session-btn" onClick={() => deleteSession(session.id)}>×</button>
+                        <button className="delete-session-btn" onClick={() => deleteSession(session.id)}>Delete</button>
                         </td>
                       </tr>
                     ))}
