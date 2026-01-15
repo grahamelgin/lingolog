@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const PORT = 3000;
 
@@ -6,6 +7,7 @@ const db = require('./database/db');
 const languagesRouter = require('./routes/languages');
 const sessionsRouter = require('./routes/sessions');
 
+app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
