@@ -4,6 +4,7 @@ const app = express();
 const PORT = 3000;
 
 const db = require('./database/db');
+const authRouter = require('./routes/auth');
 const languagesRouter = require('./routes/languages');
 const sessionsRouter = require('./routes/sessions');
 
@@ -13,14 +14,16 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Language Learning Tracker API',
-    version: '1.0.0',
+    version: '2.0.0',
     endpoints: {
+      auth: '/api/auth',
       languages: '/api/languages',
       sessions: '/api/sessions'
     }
   });
 });
 
+app.use('/api/auth', authRouter);
 app.use('/api/languages', languagesRouter);
 app.use('/api/sessions', sessionsRouter);
 

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from './api/axios';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import './App.css';
 
-const API_URL = 'http://localhost:3000/api';
-
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
   const [languages, setLanguages] = useState([]);
   const [newLanguage, setNewLanguage] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState(null);
@@ -19,7 +21,11 @@ function App() {
   });
 
   useEffect(() => {
-    fetchLanguages();
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true);
+      fetchLanguages();
+    }
   }, []);
 
   useEffect(() => {
@@ -31,7 +37,7 @@ function App() {
 
   const fetchLanguages = async () => {
     try {
-      const response = await axios.get(`${API_URL}/languages`);
+      const response = await api.get('/languages');
       setLanguages(response.data);
     } catch (error) {
       console.error('Error fetching languages:', error);
@@ -40,7 +46,7 @@ function App() {
 
   const fetchSessions = async (languageId) => {
     try {
-      const response = await axios.get(`${API_URL}/sessions/language/${languageId}`);
+      const response = await api.get(`/sessions/language/${languageId}`);
       setSessions(response.data);
     } catch (error) {
       console.error('Error fetching sessions:', error);
@@ -49,7 +55,7 @@ function App() {
 
   const fetchStats = async (languageId) => {
     try {
-      const response = await axios.get(`${API_URL}/sessions/stats/${languageId}`);
+      const response = await api.get(`/sessions/stats/${languageId}`);
       setStats(response.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -61,7 +67,7 @@ function App() {
     if (!newLanguage.trim()) return;
     
     try {
-      await axios.post(`${API_URL}/languages`, { name: newLanguage });
+      await api.post('/languages', { name: newLanguage });
       setNewLanguage('');
       fetchLanguages();
     } catch (error) {
@@ -73,7 +79,7 @@ function App() {
     if (!confirm('Delete this language and all its sessions?')) return;
     
     try {
-      await axios.delete(`${API_URL}/languages/${id}`);
+      await api.delete(`/languages/${id}`);
       setSelectedLanguage(null);
       fetchLanguages();
     } catch (error) {
@@ -85,7 +91,7 @@ function App() {
     e.preventDefault();
     
     try {
-      await axios.post(`${API_URL}/sessions`, {
+      await api.post('/sessions', {
         language_id: selectedLanguage.id,
         ...sessionForm
       });
@@ -106,12 +112,25 @@ function App() {
 
   const deleteSession = async (id) => {
     try {
-      await axios.delete(`${API_URL}/sessions/${id}`);
+      await api.delete(`/sessions/${id}`);
       fetchSessions(selectedLanguage.id);
       fetchStats(selectedLanguage.id);
     } catch (error) {
       alert('Failed to delete session');
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    setLanguages([]);
+    setSelectedLanguage(null);
+  };
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    fetchLanguages();
   };
 
   const formatTime = (minutes) => {
@@ -132,10 +151,26 @@ function App() {
     return new Date(dateString).toLocaleDateString();
   };
 
+  if (!isAuthenticated) {
+    return showRegister ? (
+      <Register onLogin={handleLogin} onSwitchToLogin={() => setShowRegister(false)} />
+    ) : (
+      <Login onLogin={handleLogin} onSwitchToRegister={() => setShowRegister(true)} />
+    );
+  }
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+
   return (
     <div className="app">
       <header>
         <h1>Language Learning Tracker</h1>
+        <div style={{ position: 'absolute', right: '2rem', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{ color: 'white' }}>Welcome, {user.username}!</span>
+          <button onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}>
+            Logout
+          </button>
+        </div>
       </header>
 
       <div className="container">
@@ -287,7 +322,7 @@ function App() {
                         <td>{formatTime(session.duration_minutes)}</td>
                         <td>{session.notes || '-'}</td>
                         <td>
-                        <button className="delete-session-btn" onClick={() => deleteSession(session.id)}>Delete</button>
+                          <button className="delete-session-btn" onClick={() => deleteSession(session.id)}>Delete</button>
                         </td>
                       </tr>
                     ))}
