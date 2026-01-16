@@ -79,6 +79,30 @@ router.post('/', (req, res) => {
   }
 });
 
+router.put('/:id', (req, res) => {
+  try {
+    const { category, duration_minutes, date, notes } = req.body;
+    
+    if (!category || !duration_minutes || !date) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const result = db.prepare(`
+      UPDATE study_sessions
+      SET category = ?, duration_minutes = ?, date = ?, notes = ?
+      WHERE id = ? AND user_id = ?
+    `).run(category, duration_minutes, date, notes || null, req.params.id, req.user.id);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    res.json({ message: 'Session updated' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update session' });
+  }
+});
+
 router.delete('/:id', (req, res) => {
   try {
     const result = db.prepare('DELETE FROM study_sessions WHERE id = ? AND user_id = ?').run(req.params.id, req.user.id);

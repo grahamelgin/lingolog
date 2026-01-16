@@ -31,6 +31,26 @@ router.post('/', (req, res) => {
   }
 });
 
+router.put('/:id', (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) {
+      return res.status(400).json({ error: 'Language name is required' });
+    }
+    const result = db.prepare('UPDATE languages SET name = ? WHERE id = ? AND user_id = ?').run(name, req.params.id, req.user.id);
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Language not found' });
+    }
+    res.json({ message: 'Language renamed' });
+  } catch (error) {
+    if (error.code === 'SQLITE_CONSTRAINT') {
+      res.status(400).json({ error: 'Language name already exists' });
+    } else {
+      res.status(500).json({ error: 'Failed to rename language' });
+    }
+  }
+});
+
 router.delete('/:id', (req, res) => {
   try {
     const result = db.prepare('DELETE FROM languages WHERE id = ? AND user_id = ?').run(req.params.id, req.user.id);

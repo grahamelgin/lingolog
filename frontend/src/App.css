@@ -254,7 +254,8 @@ header h1 {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   padding: 0.75rem;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
@@ -306,6 +307,9 @@ th {
 td {
   padding: 1rem;
   border-bottom: 1px solid #f0f0f0;
+  max-width: 200px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .category-badge {

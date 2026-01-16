@@ -12,6 +12,10 @@ function App() {
   const [selectedLanguage, setSelectedLanguage] = useState(null);
   const [sessions, setSessions] = useState([]);
   const [stats, setStats] = useState(null);
+  const [editingLanguageName, setEditingLanguageName] = useState(false);
+  const [editedLanguageName, setEditedLanguageName] = useState('');
+  const [filterCategory, setFilterCategory] = useState('All');
+  const [editingSession, setEditingSession] = useState(null);
   
   const [sessionForm, setSessionForm] = useState({
     category: 'Reading',
@@ -87,6 +91,27 @@ function App() {
     }
   };
 
+  const handleSaveLanguageName = async () => {
+    if (!editedLanguageName.trim() || editedLanguageName === selectedLanguage.name) {
+      setEditingLanguageName(false);
+      return;
+    }
+
+    try {
+      await api.put(`/languages/${selectedLanguage.id}`, { name: editedLanguageName });
+      setSelectedLanguage({ ...selectedLanguage, name: editedLanguageName });
+      setEditingLanguageName(false);
+      fetchLanguages();
+    } catch (error) {
+      alert(error.response?.data?.error || 'Failed to rename language');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingLanguageName(false);
+    setEditedLanguageName('');
+  };
+
   const addSession = async (e) => {
     e.preventDefault();
     
@@ -118,6 +143,30 @@ function App() {
     } catch (error) {
       alert('Failed to delete session');
     }
+  };
+
+  const handleEditSession = (session) => {
+    setEditingSession(session);
+  };
+  
+  const handleSaveSession = async () => {
+    try {
+      await api.put(`/sessions/${editingSession.id}`, {
+        category: editingSession.category,
+        duration_minutes: editingSession.duration_minutes,
+        date: editingSession.date,
+        notes: editingSession.notes
+      });
+      setEditingSession(null);
+      fetchSessions(selectedLanguage.id);
+      fetchStats(selectedLanguage.id);
+    } catch (error) {
+      alert('Failed to update session');
+    }
+  };
+  
+  const handleCancelEditSession = () => {
+    setEditingSession(null);
   };
 
   const handleLogout = () => {
@@ -210,7 +259,24 @@ function App() {
             <button className="back-btn" onClick={() => setSelectedLanguage(null)}>← Back</button>
             
             <div className="language-header">
-              <h2>{selectedLanguage.name}</h2>
+              {editingLanguageName ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <input
+                    type="text"
+                    value={editedLanguageName}
+                    onChange={(e) => setEditedLanguageName(e.target.value)}
+                    autoFocus
+                    style={{ fontSize: '2rem', padding: '0.5rem', border: '2px solid #667eea', borderRadius: '8px' }}
+                  />
+                  <button onClick={handleSaveLanguageName} style={{ background: '#28a745', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}>Save</button>
+                  <button onClick={handleCancelEdit} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <h2>{selectedLanguage.name}</h2>
+                  <button onClick={() => { setEditingLanguageName(true); setEditedLanguageName(selectedLanguage.name); }} style={{ background: '#f0f0f0', color: '#666', border: '1px solid #e0e0e0', padding: '0.25rem 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem' }}>Rename</button>
+                </div>
+              )}
               <button className="delete-btn" onClick={() => deleteLanguage(selectedLanguage.id)}>Delete Language</button>
             </div>
 
@@ -287,11 +353,12 @@ function App() {
 
                 <div className="form-group">
                   <label>Notes (optional)</label>
-                  <input
-                    type="text"
+                  <textarea
                     value={sessionForm.notes}
                     onChange={(e) => setSessionForm({...sessionForm, notes: e.target.value})}
                     placeholder="What did you study?"
+                    rows="3"
+                    style={{ resize: 'vertical', fontFamily: 'inherit' }}
                   />
                 </div>
 
@@ -300,7 +367,26 @@ function App() {
             </div>
 
             <div className="sessions-list">
-              <h3>Study Sessions</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3>Study Sessions</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <label style={{ fontSize: '0.875rem', color: '#666' }}>Filter:</label>
+                  <select 
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    style={{ padding: '0.5rem', border: '2px solid #e0e0e0', borderRadius: '6px', fontSize: '0.875rem' }}
+                  >
+                    <option>All</option>
+                    <option>Reading</option>
+                    <option>Listening</option>
+                    <option>Speaking</option>
+                    <option>Writing</option>
+                    <option>Grammar</option>
+                    <option>Vocabulary</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
               {sessions.length === 0 ? (
                 <p>No sessions yet. Add one above!</p>
               ) : (
@@ -315,14 +401,56 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sessions.map(session => (
+                    {sessions.filter(session => filterCategory === 'All' || session.category === filterCategory).map(session => (
                       <tr key={session.id}>
-                        <td>{formatDate(session.date)}</td>
-                        <td><span className="category-badge">{session.category}</span></td>
-                        <td>{formatTime(session.duration_minutes)}</td>
-                        <td>{session.notes || '-'}</td>
                         <td>
-                          <button className="delete-session-btn" onClick={() => deleteSession(session.id)}>Delete</button>
+                          {editingSession?.id === session.id ? (
+                            <input type="date" value={editingSession.date} onChange={(e) => setEditingSession({...editingSession, date: e.target.value})} style={{ padding: '0.5rem', fontSize: '0.875rem', border: '2px solid #e0e0e0', borderRadius: '6px' }} />
+                          ) : (
+                            formatDate(session.date)
+                          )}
+                        </td>
+                        <td>
+                          {editingSession?.id === session.id ? (
+                            <select value={editingSession.category} onChange={(e) => setEditingSession({...editingSession, category: e.target.value})} style={{ padding: '0.5rem', fontSize: '0.875rem', border: '2px solid #e0e0e0', borderRadius: '6px' }}>
+                              <option>Reading</option>
+                              <option>Listening</option>
+                              <option>Speaking</option>
+                              <option>Writing</option>
+                              <option>Grammar</option>
+                              <option>Vocabulary</option>
+                              <option>Other</option>
+                            </select>
+                          ) : (
+                            <span className="category-badge">{session.category}</span>
+                          )}
+                        </td>
+                        <td>
+                          {editingSession?.id === session.id ? (
+                            <input type="number" value={editingSession.duration_minutes} onChange={(e) => setEditingSession({...editingSession, duration_minutes: e.target.value})} style={{ padding: '0.5rem', fontSize: '0.875rem', width: '80px', border: '2px solid #e0e0e0', borderRadius: '6px' }} min="1" />
+                          ) : (
+                            formatTime(session.duration_minutes)
+                          )}
+                        </td>
+                        <td>
+                          {editingSession?.id === session.id ? (
+                            <textarea value={editingSession.notes || ''} onChange={(e) => setEditingSession({...editingSession, notes: e.target.value})} rows="2" style={{ padding: '0.5rem', fontSize: '0.875rem', border: '2px solid #e0e0e0', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit', width: '100%' }} />
+                          ) : (
+                            session.notes || '-'
+                          )}
+                        </td>
+                        <td>
+                          {editingSession?.id === session.id ? (
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <button onClick={handleSaveSession} style={{ background: '#28a745', color: 'white', border: 'none', padding: '0.25rem 0.5rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem' }}>Save</button>
+                              <button onClick={handleCancelEditSession} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '0.25rem 0.5rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem' }}>Cancel</button>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <button onClick={() => handleEditSession(session)} style={{ background: '#667eea', color: 'white', border: 'none', padding: '0.25rem 0.5rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem' }}>Edit</button>
+                              <button className="delete-session-btn" onClick={() => deleteSession(session.id)}>Delete</button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}
