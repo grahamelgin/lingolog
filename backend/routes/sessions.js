@@ -5,6 +5,27 @@ const { authenticateToken } = require('../middleware/auth');
 
 router.use(authenticateToken);
 
+router.get('/daily-activity', async (req, res) => {
+  try {
+    const year = new Date().getFullYear();
+    const result = await db.query(`
+      SELECT 
+        TO_CHAR(date, 'YYYY-MM-DD') as date,
+        SUM(duration_minutes) as total_minutes
+      FROM study_sessions
+      WHERE user_id = $1
+        AND EXTRACT(YEAR FROM date) = $2
+      GROUP BY date
+      ORDER BY date
+    `, [req.user.id, year]);
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching daily activity:', error);
+    res.status(500).json({ error: 'Failed to fetch daily activity' });
+  }
+});
+
 router.get('/overall-stats', async (req, res) => {
   try {
     const totalMinutesResult = await db.query(`

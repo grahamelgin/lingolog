@@ -4,13 +4,15 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Landing from './pages/Landing';
 import ConfirmModal from './components/ConfirmModal';
+import AddLanguageModal from './components/AddLanguageModal';
+import Heatmap from './components/Heatmap';
 import './App.css';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [showLanding, setShowLanding] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const [languages, setLanguages] = useState([]);
   const [newLanguage, setNewLanguage] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState(null);
@@ -22,6 +24,8 @@ function App() {
   const [filterCategory, setFilterCategory] = useState('All');
   const [editingSession, setEditingSession] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
+  const [heatmapRefresh, setHeatmapRefresh] = useState(0);
+  const [showAddLanguageModal, setShowAddLanguageModal] = useState(false);
   
   const [sessionForm, setSessionForm] = useState({
     category: 'Reading',
@@ -90,8 +94,9 @@ function App() {
     if (!newLanguage.trim()) return;
     
     try {
-      await api.post('/languages', { name: newLanguage });
+      await api.post('/languages', { name: newLanguage.trim() });
       setNewLanguage('');
+      setShowAddLanguageModal(false);
       fetchLanguages();
       fetchOverallStats();
     } catch (error) {
@@ -159,6 +164,7 @@ function App() {
       fetchSessions(selectedLanguage.id);
       fetchStats(selectedLanguage.id);
       fetchOverallStats();
+      setHeatmapRefresh(prev => prev + 1); // Trigger heatmap refresh
     } catch (error) {
       alert('Failed to add session');
     }
@@ -300,18 +306,18 @@ function App() {
           <span style={{ color: 'white' }}>Welcome, {user.username}!</span>
           <button 
             onClick={toggleDarkMode} 
-            style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.5)', padding: '0.5rem 0.75rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', transition: 'background 0.2s', lineHeight: '1', display: 'inline-flex', alignItems: 'center' }} 
+            style={{ background: isDarkMode ? 'rgba(26,26,26,0.5)' : 'rgba(255,255,255,0.2)', color: 'white', border: isDarkMode ? '2px solid #1a1a1a' : '1px solid rgba(255,255,255,0.5)', padding: '0.5rem 0.75rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', transition: 'background 0.2s', lineHeight: '1', display: 'inline-flex', alignItems: 'center' }} 
             title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            onMouseEnter={(e) => { e.target.style.background = 'rgba(255,255,255,0.35)'; }}
-            onMouseLeave={(e) => { e.target.style.background = 'rgba(255,255,255,0.2)'; }}
+            onMouseEnter={(e) => { e.target.style.background = isDarkMode ? 'rgba(26,26,26,0.7)' : 'rgba(255,255,255,0.35)'; }}
+            onMouseLeave={(e) => { e.target.style.background = isDarkMode ? 'rgba(26,26,26,0.5)' : 'rgba(255,255,255,0.2)'; }}
           >
             {isDarkMode ? '◑' : '◐'}
           </button>
           <button 
             onClick={handleLogout} 
-            style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.5)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', transition: 'background 0.2s', lineHeight: '1', display: 'inline-flex', alignItems: 'center' }}
-            onMouseEnter={(e) => { e.target.style.background = 'rgba(255,255,255,0.35)'; }}
-            onMouseLeave={(e) => { e.target.style.background = 'rgba(255,255,255,0.2)'; }}
+            style={{ background: isDarkMode ? 'rgba(26,26,26,0.5)' : 'rgba(255,255,255,0.2)', color: 'white', border: isDarkMode ? '2px solid #1a1a1a' : '1px solid rgba(255,255,255,0.5)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', transition: 'background 0.2s', lineHeight: '1', display: 'inline-flex', alignItems: 'center' }}
+            onMouseEnter={(e) => { e.target.style.background = isDarkMode ? 'rgba(26,26,26,0.7)' : 'rgba(255,255,255,0.35)'; }}
+            onMouseLeave={(e) => { e.target.style.background = isDarkMode ? 'rgba(26,26,26,0.5)' : 'rgba(255,255,255,0.2)'; }}
           >
             Logout
           </button>
@@ -338,24 +344,40 @@ function App() {
                 <p className="stat-value">{overallStats ? formatTime(overallStats.total_minutes) : 'Loading...'}</p>
               </div>
             </div>
-            
-            <div className="add-language">
-              <h2>Add Language</h2>
-              <form onSubmit={addLanguage}>
-                <input
-                  type="text"
-                  value={newLanguage}
-                  onChange={(e) => setNewLanguage(e.target.value)}
-                  placeholder="e.g., Spanish, Japanese"
-                />
-                <button type="submit">Add</button>
-              </form>
-            </div>
+
+            <Heatmap isDarkMode={isDarkMode} api={api} refreshTrigger={heatmapRefresh} />
 
             <div className="languages-list">
-              <h2>Your Languages</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ margin: 0 }}>Your Languages</h2>
+                <button 
+                  onClick={() => setShowAddLanguageModal(true)}
+                  style={{
+                    background: 'transparent',
+                    color: '#28a745',
+                    border: '2px solid #28a745',
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '1.5rem',
+                    fontWeight: '400',
+                    transition: 'background 0.2s',
+                    lineHeight: '1',
+                    width: '40px',
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = 'rgba(40, 167, 69, 0.1)'}
+                  onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                  title="Add new language"
+                >
+                  +
+                </button>
+              </div>
               {languages.length === 0 ? (
-                <p>No languages yet. Add one above!</p>
+                <p>No languages yet. Click "Add" to get started!</p>
               ) : (
                 <div className="language-cards">
                   {languages.map(lang => (
@@ -381,7 +403,7 @@ function App() {
                     value={editedLanguageName}
                     onChange={(e) => setEditedLanguageName(e.target.value)}
                     autoFocus
-                    style={{ fontSize: '2rem', padding: '0.5rem', border: '2px solid #667eea', borderRadius: '8px', textAlign: 'center' }}
+                    style={{ fontSize: '2rem', padding: '0.5rem', border: '2px solid #667eea', borderRadius: '8px', textAlign: 'center', background: isDarkMode ? '#3d3d3d' : 'white', color: isDarkMode ? '#e0e0e0' : '#333' }}
                   />
                   <button onClick={handleSaveLanguageName} style={{ background: '#28a745', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}>Save</button>
                   <button onClick={handleCancelEdit} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
@@ -398,7 +420,24 @@ function App() {
               
               <div style={{ display: 'flex', gap: '0.5rem', alignSelf: 'center' }}>
                 <button className="back-btn" onClick={() => { setEditingLanguageName(true); setEditedLanguageName(selectedLanguage.name); }}>Rename</button>
-                <button className="delete-btn" onClick={() => deleteLanguage(selectedLanguage.id)}>Delete Language</button>
+                <button 
+                  className="delete-btn" 
+                  onClick={() => deleteLanguage(selectedLanguage.id)}
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.5rem',
+                    fontWeight: '400',
+                    lineHeight: '1',
+                    padding: '0'
+                  }}
+                  title="Delete Language"
+                >
+                  −
+                </button>
               </div>
             </div>
 
@@ -466,6 +505,7 @@ function App() {
                       type="date"
                       value={sessionForm.date}
                       onChange={(e) => setSessionForm({...sessionForm, date: e.target.value})}
+                      max={new Date().toISOString().split('T')[0]}
                       required
                     />
                   </div>
@@ -525,7 +565,7 @@ function App() {
                       <tr key={session.id}>
                         <td>
                           {editingSession?.id === session.id ? (
-                            <input type="date" value={editingSession.date} onChange={(e) => setEditingSession({...editingSession, date: e.target.value})} style={{ padding: '0.5rem', fontSize: '0.875rem', border: '2px solid #e0e0e0', borderRadius: '6px' }} />
+                            <input type="date" value={editingSession.date} onChange={(e) => setEditingSession({...editingSession, date: e.target.value})} max={new Date().toISOString().split('T')[0]} style={{ padding: '0.5rem', fontSize: '0.875rem', border: '2px solid #e0e0e0', borderRadius: '6px' }} />
                           ) : (
                             formatDate(session.date)
                           )}
@@ -588,6 +628,18 @@ function App() {
         onCancel={() => setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null })}
         title={confirmModal.title}
         message={confirmModal.message}
+        isDarkMode={isDarkMode}
+      />
+
+      <AddLanguageModal
+        isOpen={showAddLanguageModal}
+        onConfirm={addLanguage}
+        onCancel={() => {
+          setShowAddLanguageModal(false);
+          setNewLanguage('');
+        }}
+        value={newLanguage}
+        onChange={(e) => setNewLanguage(e.target.value)}
         isDarkMode={isDarkMode}
       />
     </div>
