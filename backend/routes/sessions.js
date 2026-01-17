@@ -5,90 +5,96 @@ const { authenticateToken } = require('../middleware/auth');
 
 router.use(authenticateToken);
 
-router.get('/overall-stats', (req, res) => {
+router.get('/overall-stats', async (req, res) => {
   try {
-    const totalMinutes = db.prepare(`
+    const totalMinutesResult = await db.query(`
       SELECT COALESCE(SUM(duration_minutes), 0) as total
       FROM study_sessions
-      WHERE user_id = ?
-    `).get(req.user.id);
+      WHERE user_id = $1
+    `, [req.user.id]);
 
-    const mostStudied = db.prepare(`
+    const mostStudiedResult = await db.query(`
       SELECT l.name, SUM(s.duration_minutes) as total_minutes
       FROM study_sessions s
       JOIN languages l ON s.language_id = l.id
-      WHERE s.user_id = ?
+      WHERE s.user_id = $1
       GROUP BY l.id, l.name
       ORDER BY total_minutes DESC
       LIMIT 1
-    `).get(req.user.id);
+    `, [req.user.id]);
+
+    const mostStudied = mostStudiedResult.rows[0];
 
     res.json({
-      total_minutes: totalMinutes.total,
+      total_minutes: totalMinutesResult.rows[0].total,
       most_studied_language: mostStudied ? mostStudied.name : null,
       most_studied_minutes: mostStudied ? mostStudied.total_minutes : 0
     });
   } catch (error) {
+    console.error('Error fetching overall stats:', error);
     res.status(500).json({ error: 'Failed to fetch overall stats' });
   }
 });
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const sessions = db.prepare(`
+    const result = await db.query(`
       SELECT s.*, l.name as language_name
       FROM study_sessions s
       JOIN languages l ON s.language_id = l.id
-      WHERE s.user_id = ?
+      WHERE s.user_id = $1
       ORDER BY s.date DESC, s.created_at DESC
-    `).all(req.user.id);
-    res.json(sessions);
+    `, [req.user.id]);
+    res.json(result.rows);
   } catch (error) {
+    console.error('Error fetching sessions:', error);
     res.status(500).json({ error: 'Failed to fetch sessions' });
   }
 });
 
-router.get('/language/:languageId', (req, res) => {
+router.get('/language/:languageId', async (req, res) => {
   try {
-    const sessions = db.prepare(`
+    const result = await db.query(`
       SELECT s.*, l.name as language_name
       FROM study_sessions s
       JOIN languages l ON s.language_id = l.id
-      WHERE s.language_id = ? AND s.user_id = ?
+      WHERE s.language_id = $1 AND s.user_id = $2
       ORDER BY s.date DESC, s.created_at DESC
-    `).all(req.params.languageId, req.user.id);
-    res.json(sessions);
+    `, [req.params.languageId, req.user.id]);
+    res.json(result.rows);
   } catch (error) {
+    console.error('Error fetching sessions:', error);
     res.status(500).json({ error: 'Failed to fetch sessions' });
   }
 });
 
-router.get('/stats/:languageId', (req, res) => {
+router.get('/stats/:languageId', async (req, res) => {
   try {
-    const total = db.prepare(`
+    const totalResult = await db.query(`
       SELECT SUM(duration_minutes) as total_minutes
       FROM study_sessions
-      WHERE language_id = ? AND user_id = ?
-    `).get(req.params.languageId, req.user.id);
+      WHERE language_id = $1 AND user_id = $2
+    `, [req.params.languageId, req.user.id]);
 
-    const byCategory = db.prepare(`
+    const byCategoryResult = await db.query(`
       SELECT category, SUM(duration_minutes) as total_minutes, COUNT(*) as session_count
       FROM study_sessions
-      WHERE language_id = ? AND user_id = ?
+      WHERE language_id = $1 AND user_id = $2
       GROUP BY category
       ORDER BY total_minutes DESC
-    `).all(req.params.languageId, req.user.id);
+    `, [req.params.languageId, req.user.id]);
 
     res.json({
-      total_minutes: total.total_minutes || 0,
-      by_category: byCategory
+      total_minutes: totalResult.rows[0].total_minutes || 0,
+      by_category: byCategoryResult.rows
     });
   } catch (error) {
+    console.error('Error fetching stats:', error);
     res.status(500).json({ error: 'Failed to fetch stats' });
   }
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { language_id, category, duration_minutes, date, notes } = req.body;
     
@@ -96,18 +102,20 @@ router.post('/', (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const result = db.prepare(`
+    const result = await db.query(`
       INSERT INTO study_sessions (user_id, language_id, category, duration_minutes, date, notes)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(req.user.id, language_id, category, duration_minutes, date, notes || null);
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING id
+    `, [req.user.id, language_id, category, duration_minutes, date, notes || null]);
 
-    res.status(201).json({ id: result.lastInsertRowid });
+    res.status(201).json({ id: result.rows[0].id });
   } catch (error) {
+    console.error('Error adding session:', error);
     res.status(500).json({ error: 'Failed to add session' });
   }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const { category, duration_minutes, date, notes } = req.body;
     
@@ -115,30 +123,35 @@ router.put('/:id', (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const result = db.prepare(`
+    const result = await db.query(`
       UPDATE study_sessions
-      SET category = ?, duration_minutes = ?, date = ?, notes = ?
-      WHERE id = ? AND user_id = ?
-    `).run(category, duration_minutes, date, notes || null, req.params.id, req.user.id);
+      SET category = $1, duration_minutes = $2, date = $3, notes = $4
+      WHERE id = $5 AND user_id = $6
+    `, [category, duration_minutes, date, notes || null, req.params.id, req.user.id]);
 
-    if (result.changes === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Session not found' });
     }
 
     res.json({ message: 'Session updated' });
   } catch (error) {
+    console.error('Error updating session:', error);
     res.status(500).json({ error: 'Failed to update session' });
   }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    const result = db.prepare('DELETE FROM study_sessions WHERE id = ? AND user_id = ?').run(req.params.id, req.user.id);
-    if (result.changes === 0) {
+    const result = await db.query(
+      'DELETE FROM study_sessions WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Session not found' });
     }
     res.json({ message: 'Session deleted' });
   } catch (error) {
+    console.error('Error deleting session:', error);
     res.status(500).json({ error: 'Failed to delete session' });
   }
 });

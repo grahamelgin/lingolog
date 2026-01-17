@@ -98,8 +98,6 @@ function App() {
   };
 
   const deleteLanguage = async (id) => {
-    if (!confirm('Delete this language and all its sessions?')) return;
-    
     try {
       await api.delete(`/languages/${id}`);
       setSelectedLanguage(null);
@@ -203,11 +201,15 @@ function App() {
     setIsAuthenticated(false);
     setLanguages([]);
     setSelectedLanguage(null);
+    setOverallStats(null); // Clear overall stats
+    setSessions([]);       // Clear sessions
+    setStats(null);        // Clear stats
   };
 
   const handleLogin = () => {
     setIsAuthenticated(true);
     fetchLanguages();
+    fetchOverallStats();
   };
 
   const toggleDarkMode = () => {
@@ -226,12 +228,14 @@ function App() {
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    if (dateString.length === 10 && dateString.includes('-')) {
-      const [year, month, day] = dateString.split('-');
-      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      return date.toLocaleDateString();
-    }
-    return new Date(dateString).toLocaleDateString();
+    
+    // Convert UTC timestamp to user's LOCAL timezone
+    const date = new Date(dateString);
+    const month = date.getMonth() + 1;  // Uses local timezone
+    const day = date.getDate();          // Uses local timezone
+    const year = date.getFullYear();     // Uses local timezone
+    
+    return `${month}/${day}/${year}`;
   };
 
   if (!isAuthenticated) {
@@ -289,25 +293,23 @@ function App() {
       <div className="container">
         {!selectedLanguage ? (
           <div className="languages-view">
-            {overallStats && (
-              <div className="overall-stats">
-                <div className="overall-stat-card">
-                  <h3>Most Studied Language</h3>
-                  <p className="stat-value">
-                    {overallStats.most_studied_language || 'None yet'}
+            <div className="overall-stats">
+              <div className="overall-stat-card">
+                <h3>Most Studied Language</h3>
+                <p className="stat-value">
+                  {overallStats ? (overallStats.most_studied_language || 'None yet') : 'Loading...'}
+                </p>
+                {overallStats?.most_studied_language && (
+                  <p style={{ fontSize: '1rem', marginTop: '0.5rem', color: isDarkMode ? '#aaa' : '#666' }}>
+                    {formatTime(overallStats.most_studied_minutes)}
                   </p>
-                  {overallStats.most_studied_language && (
-                    <p style={{ fontSize: '1rem', marginTop: '0.5rem', color: '#666' }}>
-                      {formatTime(overallStats.most_studied_minutes)}
-                    </p>
-                  )}
-                </div>
-                <div className="overall-stat-card">
-                  <h3>Total Study Time</h3>
-                  <p className="stat-value">{formatTime(overallStats.total_minutes)}</p>
-                </div>
+                )}
               </div>
-            )}
+              <div className="overall-stat-card">
+                <h3>Total Study Time</h3>
+                <p className="stat-value">{overallStats ? formatTime(overallStats.total_minutes) : 'Loading...'}</p>
+              </div>
+            </div>
             
             <div className="add-language">
               <h2>Add Language</h2>
@@ -332,7 +334,7 @@ function App() {
                     <div key={lang.id} className="language-card" onClick={() => setSelectedLanguage(lang)}>
                       <h3>{lang.name}</h3>
                       <p className="language-time">{formatTime(lang.total_minutes)}</p>
-                      <p className="date">Added {formatDate(lang.created_at.substring(0, 10))}</p>
+                      <p className="date">Added {formatDate(lang.created_at)}</p>
                     </div>
                   ))}
                 </div>
@@ -372,22 +374,20 @@ function App() {
               </div>
             </div>
 
-            {stats && (
-              <div className="stats">
-                <div className="stat-card">
-                  <h3>Total Time</h3>
-                  <p className="stat-value">{formatTime(stats.total_minutes)}</p>
-                </div>
-                <div className="stat-card">
-                  <h3>Sessions</h3>
-                  <p className="stat-value">{sessions.length}</p>
-                </div>
-                <div className="stat-card">
-                  <h3>Categories</h3>
-                  <p className="stat-value">{stats.by_category.length}</p>
-                </div>
+            <div className="stats">
+              <div className="stat-card">
+                <h3>Total Time</h3>
+                <p className="stat-value">{stats ? formatTime(stats.total_minutes) : 'Loading...'}</p>
               </div>
-            )}
+              <div className="stat-card">
+                <h3>Sessions</h3>
+                <p className="stat-value">{stats ? sessions.length : 'Loading...'}</p>
+              </div>
+              <div className="stat-card">
+                <h3>Categories</h3>
+                <p className="stat-value">{stats ? stats.by_category.length : 'Loading...'}</p>
+              </div>
+            </div>
 
             {stats && stats.by_category.length > 0 && (
               <div className="category-breakdown">

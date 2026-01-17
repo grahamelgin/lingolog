@@ -5,68 +5,81 @@ const { authenticateToken } = require('../middleware/auth');
 
 router.use(authenticateToken);
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const languages = db.prepare(`
-      SELECT l.*, 
+    const result = await db.query(`
+      SELECT l.id, l.user_id, l.name, l.created_at,
              COALESCE(SUM(s.duration_minutes), 0) as total_minutes
       FROM languages l
       LEFT JOIN study_sessions s ON l.id = s.language_id
-      WHERE l.user_id = ?
-      GROUP BY l.id
+      WHERE l.user_id = $1
+      GROUP BY l.id, l.user_id, l.name, l.created_at
       ORDER BY total_minutes DESC, l.created_at DESC
-    `).all(req.user.id);
-    res.json(languages);
+    `, [req.user.id]);
+    res.json(result.rows);
   } catch (error) {
+    console.error('Error fetching languages:', error);
     res.status(500).json({ error: 'Failed to fetch languages' });
   }
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) {
       return res.status(400).json({ error: 'Language name is required' });
     }
-    const result = db.prepare('INSERT INTO languages (user_id, name) VALUES (?, ?)').run(req.user.id, name);
-    res.status(201).json({ id: result.lastInsertRowid, name, user_id: req.user.id });
+    const result = await db.query(
+      'INSERT INTO languages (user_id, name) VALUES ($1, $2) RETURNING *',
+      [req.user.id, name]
+    );
+    res.status(201).json(result.rows[0]);
   } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT') {
+    if (error.code === '23505') { // PostgreSQL unique constraint violation
       res.status(400).json({ error: 'Language already exists' });
     } else {
+      console.error('Error adding language:', error);
       res.status(500).json({ error: 'Failed to add language' });
     }
   }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const { name } = req.body;
     if (!name) {
       return res.status(400).json({ error: 'Language name is required' });
     }
-    const result = db.prepare('UPDATE languages SET name = ? WHERE id = ? AND user_id = ?').run(name, req.params.id, req.user.id);
-    if (result.changes === 0) {
+    const result = await db.query(
+      'UPDATE languages SET name = $1 WHERE id = $2 AND user_id = $3',
+      [name, req.params.id, req.user.id]
+    );
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Language not found' });
     }
     res.json({ message: 'Language renamed' });
   } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT') {
+    if (error.code === '23505') { // PostgreSQL unique constraint violation
       res.status(400).json({ error: 'Language name already exists' });
     } else {
+      console.error('Error renaming language:', error);
       res.status(500).json({ error: 'Failed to rename language' });
     }
   }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    const result = db.prepare('DELETE FROM languages WHERE id = ? AND user_id = ?').run(req.params.id, req.user.id);
-    if (result.changes === 0) {
+    const result = await db.query(
+      'DELETE FROM languages WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Language not found' });
     }
     res.json({ message: 'Language deleted' });
   } catch (error) {
+    console.error('Error deleting language:', error);
     res.status(500).json({ error: 'Failed to delete language' });
   }
 });
