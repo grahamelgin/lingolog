@@ -7,7 +7,15 @@ router.use(authenticateToken);
 
 router.get('/', (req, res) => {
   try {
-    const languages = db.prepare('SELECT * FROM languages WHERE user_id = ? ORDER BY created_at DESC').all(req.user.id);
+    const languages = db.prepare(`
+      SELECT l.*, 
+             COALESCE(SUM(s.duration_minutes), 0) as total_minutes
+      FROM languages l
+      LEFT JOIN study_sessions s ON l.id = s.language_id
+      WHERE l.user_id = ?
+      GROUP BY l.id
+      ORDER BY total_minutes DESC, l.created_at DESC
+    `).all(req.user.id);
     res.json(languages);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch languages' });

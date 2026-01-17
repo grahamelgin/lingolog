@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:3000/api';
 
-function Login({ onLogin, onSwitchToRegister }) {
+function Login({ onLogin, onSwitchToRegister, onBackToHome, isDarkMode, toggleDarkMode }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,9 +27,22 @@ function Login({ onLogin, onSwitchToRegister }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-      <div style={{ background: 'white', padding: '2rem', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#333' }}>Login to Language Tracker</h2>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', position: 'relative' }}>
+      <button onClick={toggleDarkMode} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2rem' }} title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+        {isDarkMode ? '◑' : '◐'}
+      </button>
+      <div style={{ background: isDarkMode ? '#2d2d2d' : 'white', padding: '2rem', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px', color: isDarkMode ? '#e0e0e0' : '#333' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '1rem', color: isDarkMode ? '#e0e0e0' : '#333' }}>Login to Language Learning Tracker</h2>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <button
+            onClick={onBackToHome}
+            style={{ background: 'transparent', border: '1px solid #e0e0e0', color: '#666', cursor: 'pointer', fontSize: '0.85rem', padding: '0.4rem 0.8rem', borderRadius: '6px', transition: 'all 0.2s' }}
+            onMouseEnter={(e) => { e.target.style.borderColor = '#667eea'; e.target.style.color = '#667eea'; }}
+            onMouseLeave={(e) => { e.target.style.borderColor = '#e0e0e0'; e.target.style.color = '#666'; }}
+          >
+            ← Back
+          </button>
+        </div>
         
         {error && (
           <div style={{ background: '#fee', border: '1px solid #fcc', color: '#c33', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem' }}>
@@ -45,7 +58,7 @@ function Login({ onLogin, onSwitchToRegister }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={{ width: '100%', padding: '0.75rem', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.75rem', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '1rem', background: isDarkMode ? '#3d3d3d' : 'white', color: isDarkMode ? '#e0e0e0' : '#333' }}
             />
           </div>
 
@@ -56,7 +69,7 @@ function Login({ onLogin, onSwitchToRegister }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              style={{ width: '100%', padding: '0.75rem', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '1rem' }}
+              style={{ width: '100%', padding: '0.75rem', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '1rem', background: isDarkMode ? '#3d3d3d' : 'white', color: isDarkMode ? '#e0e0e0' : '#333' }}
             />
           </div>
 

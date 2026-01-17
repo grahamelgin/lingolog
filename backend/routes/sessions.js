@@ -5,6 +5,34 @@ const { authenticateToken } = require('../middleware/auth');
 
 router.use(authenticateToken);
 
+router.get('/overall-stats', (req, res) => {
+  try {
+    const totalMinutes = db.prepare(`
+      SELECT COALESCE(SUM(duration_minutes), 0) as total
+      FROM study_sessions
+      WHERE user_id = ?
+    `).get(req.user.id);
+
+    const mostStudied = db.prepare(`
+      SELECT l.name, SUM(s.duration_minutes) as total_minutes
+      FROM study_sessions s
+      JOIN languages l ON s.language_id = l.id
+      WHERE s.user_id = ?
+      GROUP BY l.id, l.name
+      ORDER BY total_minutes DESC
+      LIMIT 1
+    `).get(req.user.id);
+
+    res.json({
+      total_minutes: totalMinutes.total,
+      most_studied_language: mostStudied ? mostStudied.name : null,
+      most_studied_minutes: mostStudied ? mostStudied.total_minutes : 0
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch overall stats' });
+  }
+});
+
 router.get('/', (req, res) => {
   try {
     const sessions = db.prepare(`

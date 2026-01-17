@@ -2,16 +2,20 @@ import { useState, useEffect } from 'react';
 import api from './api/axios';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Landing from './pages/Landing';
 import './App.css';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [languages, setLanguages] = useState([]);
   const [newLanguage, setNewLanguage] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState(null);
   const [sessions, setSessions] = useState([]);
   const [stats, setStats] = useState(null);
+  const [overallStats, setOverallStats] = useState(null);
   const [editingLanguageName, setEditingLanguageName] = useState(false);
   const [editedLanguageName, setEditedLanguageName] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
@@ -29,7 +33,11 @@ function App() {
     if (token) {
       setIsAuthenticated(true);
       fetchLanguages();
+      fetchOverallStats();
     }
+    
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setIsDarkMode(savedDarkMode);
   }, []);
 
   useEffect(() => {
@@ -66,6 +74,15 @@ function App() {
     }
   };
 
+  const fetchOverallStats = async () => {
+    try {
+      const response = await api.get('/sessions/overall-stats');
+      setOverallStats(response.data);
+    } catch (error) {
+      console.error('Error fetching overall stats:', error);
+    }
+  };
+
   const addLanguage = async (e) => {
     e.preventDefault();
     if (!newLanguage.trim()) return;
@@ -74,6 +91,7 @@ function App() {
       await api.post('/languages', { name: newLanguage });
       setNewLanguage('');
       fetchLanguages();
+      fetchOverallStats();
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to add language');
     }
@@ -86,6 +104,7 @@ function App() {
       await api.delete(`/languages/${id}`);
       setSelectedLanguage(null);
       fetchLanguages();
+      fetchOverallStats();
     } catch (error) {
       alert('Failed to delete language');
     }
@@ -130,6 +149,7 @@ function App() {
       
       fetchSessions(selectedLanguage.id);
       fetchStats(selectedLanguage.id);
+      fetchOverallStats();
     } catch (error) {
       alert('Failed to add session');
     }
@@ -140,6 +160,7 @@ function App() {
       await api.delete(`/sessions/${id}`);
       fetchSessions(selectedLanguage.id);
       fetchStats(selectedLanguage.id);
+      fetchOverallStats();
     } catch (error) {
       alert('Failed to delete session');
     }
@@ -160,6 +181,7 @@ function App() {
       setEditingSession(null);
       fetchSessions(selectedLanguage.id);
       fetchStats(selectedLanguage.id);
+      fetchOverallStats();
     } catch (error) {
       alert('Failed to update session');
     }
@@ -167,6 +189,12 @@ function App() {
   
   const handleCancelEditSession = () => {
     setEditingSession(null);
+  };
+
+  const handleBackToLanguages = () => {
+    setSelectedLanguage(null);
+    fetchLanguages();
+    fetchOverallStats();
   };
 
   const handleLogout = () => {
@@ -180,6 +208,12 @@ function App() {
   const handleLogin = () => {
     setIsAuthenticated(true);
     fetchLanguages();
+  };
+
+  const toggleDarkMode = () => {
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode);
   };
 
   const formatTime = (minutes) => {
@@ -201,22 +235,52 @@ function App() {
   };
 
   if (!isAuthenticated) {
+    if (showLanding) {
+      return <Landing onGetStarted={() => setShowLanding(false)} isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />;
+    }
+    
     return showRegister ? (
-      <Register onLogin={handleLogin} onSwitchToLogin={() => setShowRegister(false)} />
+      <Register 
+        onLogin={handleLogin} 
+        onSwitchToLogin={() => setShowRegister(false)} 
+        onBackToHome={() => setShowLanding(true)}
+        isDarkMode={isDarkMode}
+        toggleDarkMode={toggleDarkMode}
+      />
     ) : (
-      <Login onLogin={handleLogin} onSwitchToRegister={() => setShowRegister(true)} />
+      <Login 
+        onLogin={handleLogin} 
+        onSwitchToRegister={() => setShowRegister(true)}
+        onBackToHome={() => setShowLanding(true)}
+        isDarkMode={isDarkMode}
+        toggleDarkMode={toggleDarkMode}
+      />
     );
   }
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   return (
-    <div className="app">
+    <div className={`app ${isDarkMode ? 'dark-mode' : ''}`}>
       <header>
         <h1>Language Learning Tracker</h1>
         <div style={{ position: 'absolute', right: '2rem', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ color: 'white' }}>Welcome, {user.username}!</span>
-          <button onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}>
+          <button 
+            onClick={toggleDarkMode} 
+            style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.5)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2rem', transition: 'background 0.2s' }} 
+            title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            onMouseEnter={(e) => { e.target.style.background = 'rgba(255,255,255,0.35)'; }}
+            onMouseLeave={(e) => { e.target.style.background = 'rgba(255,255,255,0.2)'; }}
+          >
+            {isDarkMode ? '◑' : '◐'}
+          </button>
+          <button 
+            onClick={handleLogout} 
+            style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.5)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', transition: 'background 0.2s' }}
+            onMouseEnter={(e) => { e.target.style.background = 'rgba(255,255,255,0.35)'; }}
+            onMouseLeave={(e) => { e.target.style.background = 'rgba(255,255,255,0.2)'; }}
+          >
             Logout
           </button>
         </div>
@@ -225,6 +289,26 @@ function App() {
       <div className="container">
         {!selectedLanguage ? (
           <div className="languages-view">
+            {overallStats && (
+              <div className="overall-stats">
+                <div className="overall-stat-card">
+                  <h3>Most Studied Language</h3>
+                  <p className="stat-value">
+                    {overallStats.most_studied_language || 'None yet'}
+                  </p>
+                  {overallStats.most_studied_language && (
+                    <p style={{ fontSize: '1rem', marginTop: '0.5rem', color: '#666' }}>
+                      {formatTime(overallStats.most_studied_minutes)}
+                    </p>
+                  )}
+                </div>
+                <div className="overall-stat-card">
+                  <h3>Total Study Time</h3>
+                  <p className="stat-value">{formatTime(overallStats.total_minutes)}</p>
+                </div>
+              </div>
+            )}
+            
             <div className="add-language">
               <h2>Add Language</h2>
               <form onSubmit={addLanguage}>
@@ -247,6 +331,7 @@ function App() {
                   {languages.map(lang => (
                     <div key={lang.id} className="language-card" onClick={() => setSelectedLanguage(lang)}>
                       <h3>{lang.name}</h3>
+                      <p className="language-time">{formatTime(lang.total_minutes)}</p>
                       <p className="date">Added {formatDate(lang.created_at.substring(0, 10))}</p>
                     </div>
                   ))}
@@ -256,9 +341,9 @@ function App() {
           </div>
         ) : (
           <div className="language-detail">
-            <button className="back-btn" onClick={() => setSelectedLanguage(null)}>← Back</button>
-            
             <div className="language-header">
+              <button className="back-btn" onClick={handleBackToLanguages} style={{ alignSelf: 'center' }}>← Back</button>
+              
               {editingLanguageName ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <input
@@ -266,18 +351,25 @@ function App() {
                     value={editedLanguageName}
                     onChange={(e) => setEditedLanguageName(e.target.value)}
                     autoFocus
-                    style={{ fontSize: '2rem', padding: '0.5rem', border: '2px solid #667eea', borderRadius: '8px' }}
+                    style={{ fontSize: '2rem', padding: '0.5rem', border: '2px solid #667eea', borderRadius: '8px', textAlign: 'center' }}
                   />
                   <button onClick={handleSaveLanguageName} style={{ background: '#28a745', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}>Save</button>
                   <button onClick={handleCancelEdit} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
                 </div>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <h2>{selectedLanguage.name}</h2>
-                  <button onClick={() => { setEditingLanguageName(true); setEditedLanguageName(selectedLanguage.name); }} style={{ background: '#f0f0f0', color: '#666', border: '1px solid #e0e0e0', padding: '0.25rem 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem' }}>Rename</button>
-                </div>
+                <h2 style={{ 
+                  fontSize: '2.5rem', 
+                  color: '#555',
+                  margin: 0,
+                  fontWeight: 700,
+                  letterSpacing: '0.5px'
+                }}>{selectedLanguage.name}</h2>
               )}
-              <button className="delete-btn" onClick={() => deleteLanguage(selectedLanguage.id)}>Delete Language</button>
+              
+              <div style={{ display: 'flex', gap: '0.5rem', alignSelf: 'center' }}>
+                <button className="back-btn" onClick={() => { setEditingLanguageName(true); setEditedLanguageName(selectedLanguage.name); }}>Rename</button>
+                <button className="delete-btn" onClick={() => deleteLanguage(selectedLanguage.id)}>Delete Language</button>
+              </div>
             </div>
 
             {stats && (
@@ -374,7 +466,7 @@ function App() {
                   <select 
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value)}
-                    style={{ padding: '0.5rem', border: '2px solid #e0e0e0', borderRadius: '6px', fontSize: '0.875rem' }}
+                    className="filter-select"
                   >
                     <option>All</option>
                     <option>Reading</option>
@@ -447,7 +539,7 @@ function App() {
                             </div>
                           ) : (
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <button onClick={() => handleEditSession(session)} style={{ background: '#667eea', color: 'white', border: 'none', padding: '0.25rem 0.5rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem' }}>Edit</button>
+                              <button onClick={() => handleEditSession(session)} style={{ background: 'transparent', color: '#667eea', border: '2px solid #667eea', padding: '0.25rem 0.5rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', transition: 'background 0.2s' }} onMouseEnter={(e) => e.target.style.background = 'rgba(102, 126, 234, 0.1)'} onMouseLeave={(e) => e.target.style.background = 'transparent'}>Edit</button>
                               <button className="delete-session-btn" onClick={() => deleteSession(session.id)}>Delete</button>
                             </div>
                           )}

@@ -40,16 +40,57 @@ header h1 {
   gap: 2rem;
 }
 
+.overall-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.overall-stat-card {
+  background: white;
+  color: #555;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  border: 3px solid transparent;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+.overall-stat-card h3 {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: #667eea;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.overall-stat-card .stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: #555;
+}
+
 .add-language {
   background: white;
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 3px solid transparent;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
 .add-language h2 {
   margin-bottom: 1rem;
   font-size: 1.5rem;
+  color: #555;
 }
 
 .add-language form {
@@ -72,17 +113,18 @@ header h1 {
 
 .add-language button {
   padding: 0.75rem 2rem;
-  background: #667eea;
-  color: white;
-  border: none;
+  background: transparent;
+  color: #28a745;
+  border: 2px solid #28a745;
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
   font-weight: 500;
+  transition: background 0.2s;
 }
 
 .add-language button:hover {
-  background: #5568d3;
+  background: rgba(40, 167, 69, 0.1);
 }
 
 .languages-list {
@@ -90,11 +132,16 @@ header h1 {
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 3px solid transparent;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
 .languages-list h2 {
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
+  color: #555;
 }
 
 .language-cards {
@@ -105,22 +152,38 @@ header h1 {
 
 .language-card {
   padding: 1.5rem;
-  border: 2px solid #e0e0e0;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
+  text-align: center;
+  background: white;
+  border: 3px solid transparent;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
 .language-card:hover {
-  border-color: #667eea;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .language-card h3 {
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   margin-bottom: 0.5rem;
-  color: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.language-card .language-time {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #555;
+  margin: 0.5rem 0;
 }
 
 .language-card .date {
@@ -133,47 +196,55 @@ header h1 {
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 3px solid transparent;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
 .back-btn {
   padding: 0.5rem 1rem;
-  background: #f5f5f5;
-  border: none;
+  background: transparent;
+  border: 2px solid #999;
+  color: #555;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 1rem;
-  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  transition: background 0.2s;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 
 .back-btn:hover {
-  background: #e0e0e0;
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .language-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 2px solid #f0f0f0;
 }
 
-.language-header h2 {
-  font-size: 2rem;
-  color: #667eea;
-}
-
 .delete-btn {
   padding: 0.5rem 1rem;
-  background: #dc3545;
-  color: white;
-  border: none;
+  background: transparent;
+  color: #dc3545;
+  border: 2px solid #dc3545;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 0.875rem;
+  transition: background 0.2s;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 
 .delete-btn:hover {
-  background: #c82333;
+  background: rgba(220, 53, 69, 0.1);
 }
 
 .stats {
@@ -184,41 +255,51 @@ header h1 {
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: white;
+  color: #555;
   padding: 1.5rem;
   border-radius: 12px;
   text-align: center;
+  border: 3px solid transparent;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
 .stat-card h3 {
   font-size: 0.875rem;
   font-weight: 500;
   margin-bottom: 0.5rem;
-  opacity: 0.9;
+  color: #667eea;
 }
 
 .stat-value {
   font-size: 2rem;
   font-weight: 700;
+  color: #555;
 }
 
 .category-breakdown {
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: #f9f9f9;
+  background: white;
   border-radius: 12px;
+  border: 3px solid transparent;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
 .category-breakdown h3 {
   margin-bottom: 1rem;
+  color: #555;
 }
 
 .category-item {
   display: flex;
   justify-content: space-between;
   padding: 0.75rem;
-  background: white;
+  background: #f9f9f9;
   margin-bottom: 0.5rem;
   border-radius: 8px;
 }
@@ -226,12 +307,17 @@ header h1 {
 .add-session {
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: #f9f9f9;
+  background: white;
   border-radius: 12px;
+  border: 3px solid transparent;
+  background-image: linear-gradient(white, white), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
 .add-session h3 {
   margin-bottom: 1rem;
+  color: #555;
 }
 
 .form-row {
@@ -271,21 +357,23 @@ header h1 {
 .add-session button {
   margin-top: 1rem;
   padding: 0.75rem 2rem;
-  background: #28a745;
-  color: white;
-  border: none;
+  background: transparent;
+  color: #28a745;
+  border: 2px solid #28a745;
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
   font-weight: 500;
+  transition: background 0.2s;
 }
 
 .add-session button:hover {
-  background: #218838;
+  background: rgba(40, 167, 69, 0.1);
 }
 
 .sessions-list h3 {
   margin-bottom: 1rem;
+  color: #555;
 }
 
 table {
@@ -315,23 +403,174 @@ td {
 .category-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
-  background: #667eea;
-  color: white;
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
   border-radius: 12px;
   font-size: 0.875rem;
 }
 
 .delete-session-btn {
-  background: #dc3545;
-  color: white;
-  border: none;
+  background: transparent;
+  color: #dc3545;
+  border: 2px solid #dc3545;
   border-radius: 4px;
   padding: 0.25rem 0.5rem;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 600;
+  transition: background 0.2s;
 }
 
 .delete-session-btn:hover {
-  background: #c82333;
+  background: rgba(220, 53, 69, 0.1);
+}
+
+/* Dark Mode Styles */
+.dark-mode {
+  background: #1a1a1a;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+
+body:has(.dark-mode) {
+  background: #1a1a1a;
+}
+
+.dark-mode .add-language {
+  background-image: linear-gradient(#2d2d2d, #2d2d2d), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #e0e0e0;
+}
+
+.dark-mode .languages-list {
+  background-image: linear-gradient(#2d2d2d, #2d2d2d), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #e0e0e0;
+}
+
+.dark-mode .language-detail {
+  background-image: linear-gradient(#2d2d2d, #2d2d2d), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #e0e0e0;
+}
+
+.dark-mode .add-language input,
+.dark-mode .form-group input,
+.dark-mode .form-group select,
+.dark-mode .form-group textarea {
+  background: #3d3d3d;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+.dark-mode .language-card {
+  background-image: linear-gradient(#2d2d2d, #2d2d2d), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dark-mode .language-card:hover {
+  background-image: linear-gradient(#3d3d3d, #3d3d3d), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dark-mode .language-card .language-time {
+  color: #e0e0e0;
+}
+
+.dark-mode .language-card .date {
+  color: #aaa;
+}
+
+.dark-mode .back-btn {
+  background: transparent;
+  color: #e0e0e0;
+  border-color: #666;
+}
+
+.dark-mode .back-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .language-header {
+  border-bottom-color: #444;
+}
+
+.dark-mode .overall-stat-card {
+  background-image: linear-gradient(#2d2d2d, #2d2d2d), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dark-mode .overall-stat-card h3 {
+  color: #667eea;
+}
+
+.dark-mode .overall-stat-card .stat-value {
+  color: #e0e0e0 !important;
+}
+
+.dark-mode .overall-stat-card p:not(.stat-value) {
+  color: #aaa;
+}
+
+.dark-mode .stat-card {
+  background-image: linear-gradient(#2d2d2d, #2d2d2d), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #e0e0e0;
+}
+
+.dark-mode .stat-card h3 {
+  color: #667eea;
+}
+
+.dark-mode .stat-value {
+  color: #e0e0e0;
+}
+
+.dark-mode .category-breakdown {
+  background-image: linear-gradient(#2d2d2d, #2d2d2d), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dark-mode .category-breakdown h3 {
+  color: #667eea;
+}
+
+.dark-mode .add-session {
+  background-image: linear-gradient(#2d2d2d, #2d2d2d), linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dark-mode .add-language h2,
+.dark-mode .languages-list h2,
+.dark-mode .add-session h3,
+.dark-mode .category-breakdown h3,
+.dark-mode .sessions-list h3 {
+  color: #e0e0e0;
+}
+
+.dark-mode .category-item {
+  background: #3d3d3d;
+}
+
+.dark-mode thead {
+  background: #3d3d3d;
+}
+
+.dark-mode th {
+  color: #aaa;
+}
+
+.dark-mode td {
+  border-bottom-color: #444;
+}
+
+.dark-mode .language-detail h2 {
+  color: #e0e0e0 !important;
+}
+
+.filter-select {
+  padding: 0.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: white;
+  color: #333;
+}
+
+.dark-mode .filter-select {
+  background: #3d3d3d;
+  color: #e0e0e0;
+  border-color: #555;
 }
