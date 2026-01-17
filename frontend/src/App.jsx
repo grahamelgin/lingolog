@@ -3,6 +3,7 @@ import api from './api/axios';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Landing from './pages/Landing';
+import ConfirmModal from './components/ConfirmModal';
 import './App.css';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
   const [editedLanguageName, setEditedLanguageName] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
   const [editingSession, setEditingSession] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
   
   const [sessionForm, setSessionForm] = useState({
     category: 'Reading',
@@ -98,14 +100,23 @@ function App() {
   };
 
   const deleteLanguage = async (id) => {
-    try {
-      await api.delete(`/languages/${id}`);
-      setSelectedLanguage(null);
-      fetchLanguages();
-      fetchOverallStats();
-    } catch (error) {
-      alert('Failed to delete language');
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Language?',
+      message: 'This will permanently delete this language and all its study sessions. This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          await api.delete(`/languages/${id}`);
+          setSelectedLanguage(null);
+          fetchLanguages();
+          fetchOverallStats();
+          setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
+        } catch (error) {
+          alert('Failed to delete language');
+          setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
+        }
+      }
+    });
   };
 
   const handleSaveLanguageName = async () => {
@@ -154,14 +165,23 @@ function App() {
   };
 
   const deleteSession = async (id) => {
-    try {
-      await api.delete(`/sessions/${id}`);
-      fetchSessions(selectedLanguage.id);
-      fetchStats(selectedLanguage.id);
-      fetchOverallStats();
-    } catch (error) {
-      alert('Failed to delete session');
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Session?',
+      message: 'This will permanently delete this study session. This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          await api.delete(`/sessions/${id}`);
+          fetchSessions(selectedLanguage.id);
+          fetchStats(selectedLanguage.id);
+          fetchOverallStats();
+          setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
+        } catch (error) {
+          alert('Failed to delete session');
+          setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
+        }
+      }
+    });
   };
 
   const handleEditSession = (session) => {
@@ -196,14 +216,22 @@ function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setIsAuthenticated(false);
-    setLanguages([]);
-    setSelectedLanguage(null);
-    setOverallStats(null); // Clear overall stats
-    setSessions([]);       // Clear sessions
-    setStats(null);        // Clear stats
+    setConfirmModal({
+      isOpen: true,
+      title: 'Log Out?',
+      message: 'Are you sure you want to log out?',
+      onConfirm: () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setIsAuthenticated(false);
+        setLanguages([]);
+        setSelectedLanguage(null);
+        setOverallStats(null);
+        setSessions([]);
+        setStats(null);
+        setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
+      }
+    });
   };
 
   const handleLogin = () => {
@@ -553,6 +581,15 @@ function App() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null })}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 }
