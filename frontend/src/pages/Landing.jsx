@@ -3,7 +3,7 @@ import './Landing.css';
 function Landing({ onGetStarted, isDarkMode, toggleDarkMode }) {
   return (
     <div className="landing" style={{ position: 'relative' }}>
-      <button onClick={toggleDarkMode} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'rgba(255,255,255,0.2)', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2rem', zIndex: 10 }} title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+      <button onClick={toggleDarkMode} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.5)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2rem', zIndex: 10 }} title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
         {isDarkMode ? '◑' : '◐'}
       </button>
       <div className="landing-content">

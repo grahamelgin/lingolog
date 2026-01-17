@@ -264,11 +264,11 @@ function App() {
     <div className={`app ${isDarkMode ? 'dark-mode' : ''}`}>
       <header>
         <h1>Language Learning Tracker</h1>
-        <div style={{ position: 'absolute', right: '2rem', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div className="user-info" style={{ position: 'absolute', right: '2rem', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ color: 'white' }}>Welcome, {user.username}!</span>
           <button 
             onClick={toggleDarkMode} 
-            style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.5)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2rem', transition: 'background 0.2s' }} 
+            style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.5)', padding: '0.5rem 0.75rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', transition: 'background 0.2s', lineHeight: '1', display: 'inline-flex', alignItems: 'center' }} 
             title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             onMouseEnter={(e) => { e.target.style.background = 'rgba(255,255,255,0.35)'; }}
             onMouseLeave={(e) => { e.target.style.background = 'rgba(255,255,255,0.2)'; }}
@@ -277,7 +277,7 @@ function App() {
           </button>
           <button 
             onClick={handleLogout} 
-            style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.5)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', transition: 'background 0.2s' }}
+            style={{ background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.5)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', transition: 'background 0.2s', lineHeight: '1', display: 'inline-flex', alignItems: 'center' }}
             onMouseEnter={(e) => { e.target.style.background = 'rgba(255,255,255,0.35)'; }}
             onMouseLeave={(e) => { e.target.style.background = 'rgba(255,255,255,0.2)'; }}
           >

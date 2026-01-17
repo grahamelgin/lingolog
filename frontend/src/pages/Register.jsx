@@ -65,53 +65,55 @@ function Register({ onLogin, onSwitchToLogin, onBackToHome, isDarkMode, toggleDa
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#666' }}>Username</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: isDarkMode ? '#e0e0e0' : '#666' }}>Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              style={{ width: '100%', padding: '0.75rem', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '1rem', background: isDarkMode ? '#3d3d3d' : 'white', color: isDarkMode ? '#e0e0e0' : '#333' }}
+              style={{ width: '100%', padding: '0.75rem', border: isDarkMode ? '2px solid #666' : '2px solid #e0e0e0', borderRadius: '8px', fontSize: '1rem', background: isDarkMode ? '#3d3d3d' : 'white', color: isDarkMode ? '#e0e0e0' : '#333' }}
             />
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#666' }}>Email</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: isDarkMode ? '#e0e0e0' : '#666' }}>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={{ width: '100%', padding: '0.75rem', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '1rem', background: isDarkMode ? '#3d3d3d' : 'white', color: isDarkMode ? '#e0e0e0' : '#333' }}
+              style={{ width: '100%', padding: '0.75rem', border: isDarkMode ? '2px solid #666' : '2px solid #e0e0e0', borderRadius: '8px', fontSize: '1rem', background: isDarkMode ? '#3d3d3d' : 'white', color: isDarkMode ? '#e0e0e0' : '#333' }}
             />
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#666' }}>Password</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: isDarkMode ? '#e0e0e0' : '#666' }}>Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              style={{ width: '100%', padding: '0.75rem', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '1rem', background: isDarkMode ? '#3d3d3d' : 'white', color: isDarkMode ? '#e0e0e0' : '#333' }}
+              style={{ width: '100%', padding: '0.75rem', border: isDarkMode ? '2px solid #666' : '2px solid #e0e0e0', borderRadius: '8px', fontSize: '1rem', background: isDarkMode ? '#3d3d3d' : 'white', color: isDarkMode ? '#e0e0e0' : '#333' }}
             />
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#666' }}>Confirm Password</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: isDarkMode ? '#e0e0e0' : '#666' }}>Confirm Password</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              style={{ width: '100%', padding: '0.75rem', border: '2px solid #e0e0e0', borderRadius: '8px', fontSize: '1rem', background: isDarkMode ? '#3d3d3d' : 'white', color: isDarkMode ? '#e0e0e0' : '#333' }}
+              style={{ width: '100%', padding: '0.75rem', border: isDarkMode ? '2px solid #666' : '2px solid #e0e0e0', borderRadius: '8px', fontSize: '1rem', background: isDarkMode ? '#3d3d3d' : 'white', color: isDarkMode ? '#e0e0e0' : '#333' }}
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            style={{ width: '100%', padding: '0.75rem', background: '#667eea', color: 'white', border: 'none', borderRadius: '8px', fontSize: '1rem', cursor: 'pointer', fontWeight: '600' }}
+            style={{ width: '100%', padding: '0.75rem', background: 'transparent', color: '#667eea', border: '2px solid #667eea', borderRadius: '8px', fontSize: '1rem', cursor: 'pointer', fontWeight: '600', transition: 'background 0.2s' }}
+            onMouseEnter={(e) => !loading && (e.target.style.background = 'rgba(102, 126, 234, 0.1)')}
+            onMouseLeave={(e) => (e.target.style.background = 'transparent')}
           >
             {loading ? 'Creating account...' : 'Register'}
           </button>
