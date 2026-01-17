@@ -7,7 +7,7 @@ function Landing({ onGetStarted, isDarkMode, toggleDarkMode }) {
         {isDarkMode ? '◑' : '◐'}
       </button>
       <div className="landing-content">
-        <h1>Language Learning Tracker</h1>
+        <h1>LingoLog</h1>
         <p className="subtitle">Track your language learning journey with ease</p>
         
         <div className="features">

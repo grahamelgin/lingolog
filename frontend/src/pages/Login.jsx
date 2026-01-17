@@ -32,7 +32,7 @@ function Login({ onLogin, onSwitchToRegister, onBackToHome, isDarkMode, toggleDa
         {isDarkMode ? '◑' : '◐'}
       </button>
       <div style={{ background: isDarkMode ? '#2d2d2d' : 'white', padding: '2rem', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px', color: isDarkMode ? '#e0e0e0' : '#333' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '1rem', color: isDarkMode ? '#e0e0e0' : '#333' }}>Login to Language Learning Tracker</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '1rem', color: isDarkMode ? '#e0e0e0' : '#333' }}>Login to LingoLog</h2>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
           <button
             onClick={onBackToHome}

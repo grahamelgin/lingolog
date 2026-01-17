@@ -12,8 +12,8 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Language Learning Tracker API',
+  res.json({
+    message: 'LingoLog API',
     version: '2.0.0',
     endpoints: {
       auth: '/api/auth',

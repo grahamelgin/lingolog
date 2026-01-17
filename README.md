@@ -1,2 +1,3 @@
-# language-learning-tracker
-Web app designed to track time spent learning a language, categorized and totaled.
+# LingoLog
+
+Track your language learning journey with ease. Log study sessions, categorize activities, and monitor your progress across multiple languages.

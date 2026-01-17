@@ -263,7 +263,7 @@ function App() {
   return (
     <div className={`app ${isDarkMode ? 'dark-mode' : ''}`}>
       <header>
-        <h1>Language Learning Tracker</h1>
+        <h1>LingoLog</h1>
         <div className="user-info" style={{ position: 'absolute', right: '2rem', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span style={{ color: 'white' }}>Welcome, {user.username}!</span>
           <button 

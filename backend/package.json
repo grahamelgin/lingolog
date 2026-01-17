@@ -1,7 +1,7 @@
 {
-    "name": "language-tracker-backend",
+    "name": "lingolog-backend",
     "version": "1.0.0",
-    "description": "Backend server for language learning tracker",
+    "description": "Backend server for LingoLog",
     "main": "server.js",
     "scripts": {
         "start": "node server.js"
