@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import './Login.css';
-
-const API_URL = 'http://localhost:3000/api';
 
 function Login({ onLogin, onSwitchToRegister, onBackToHome, isDarkMode, toggleDarkMode }) {
   const [email, setEmail] = useState('');
@@ -16,7 +14,7 @@ function Login({ onLogin, onSwitchToRegister, onBackToHome, isDarkMode, toggleDa
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+      const response = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       onLogin();
